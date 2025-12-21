@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)   # ✅ THIS LINE FIXES FLUTTER CONNECTION
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -138,6 +141,9 @@ def navigate():
         from_location_id=from_id,
         to_location_id=to_id
     ).first()
+
+    if not route:
+        return jsonify({"error": "Route not found"}), 404
 
     steps = RouteStep.query.filter_by(
         route_id=route.id
