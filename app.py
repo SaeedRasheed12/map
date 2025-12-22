@@ -26,8 +26,9 @@ class User(db.Model):
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(100))
     floor = db.Column(db.String(50))
+    place_id = db.Column(db.Integer)
 
 
 class Route(db.Model):
@@ -36,6 +37,9 @@ class Route(db.Model):
     to_location_id = db.Column(db.Integer)
     floor = db.Column(db.String(50))
 
+class Place(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True)
 
 class RouteStep(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -154,6 +158,20 @@ def navigate():
         for s in steps
     ])
 
+@app.route('/admin/place', methods=['POST'])
+def add_place():
+    data = request.json
+    place = Place(name=data['name'])
+    db.session.add(place)
+    db.session.commit()
+    return jsonify({"place_id": place.id})
+
+@app.route('/locations/<int:place_id>', methods=['GET'])
+def get_locations_by_place(place_id):
+    return jsonify([
+        {"id": l.id, "name": l.name}
+        for l in Location.query.filter_by(place_id=place_id).all()
+    ])
 
 import os
 
